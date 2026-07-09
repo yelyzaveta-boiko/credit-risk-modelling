@@ -18,7 +18,7 @@ This project implements a full credit risk modeling pipeline on loan level data:
 ```bash
 # Clone the repo
 git clone https://github.com/yelyzaveta-boiko/credit-risk-modelling.git
-cd credit-risk-modeling
+cd credit-risk-modelling
 
 # Create and activate a virtual environment
 python -m venv .venv
