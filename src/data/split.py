@@ -22,6 +22,7 @@ def time_based_split(
     date_col: str = DATE_COLUMN,
     train_end: str = DEFAULT_TRAIN_END,
     val_end: str = DEFAULT_VAL_END,
+    date_format: str = DATE_FORMAT,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     if date_col not in df.columns:
         raise KeyError(f"'{date_col}' column not found in DataFrame")
@@ -31,7 +32,7 @@ def time_based_split(
     if not train_end_ts < val_end_ts:
         raise ValueError("train_end must be before val_end")
 
-    dates = parse_issue_date(df[date_col])
+    dates = pd.to_datetime(df[date_col], format=date_format)
 
     train = df.loc[dates < train_end_ts]
     val = df.loc[(dates >= train_end_ts) & (dates < val_end_ts)]
