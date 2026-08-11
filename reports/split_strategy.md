@@ -17,7 +17,7 @@ split on.
 
 The dataset consists of the loans issued `2007-06` through `2018-12`, but volume is
 heavily skewed toward later years. Deriving cutoffs directly from row counts (as an example picking date that gives an exact 60/20/20 split) would land on an
-arbitrary date with no meaning of its own, and that would shift on every data refresh. Thereofre cutoffs were chosen on calendar year boundaries for
+arbitrary date with no meaning of its own, and that would shift on every data refresh. Therefore cutoffs were chosen on calendar year boundaries for
 stability and interpretability:
 
 | split | range                                | rows      | share |
