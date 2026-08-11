@@ -15,7 +15,7 @@ def parse_issue_date(series: pd.Series) -> pd.Series:
     return pd.to_datetime(series, format=DATE_FORMAT)
 
 
-# Half open splits on the boundary dates: 
+# Half open splits on the boundary dates:
 # train < train_end <= val < val_end <= test.
 def time_based_split(
     df: pd.DataFrame,
