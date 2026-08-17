@@ -12,7 +12,7 @@ enforcement
      merge neighboring buckets together until it does
   4. Save the final bucket edges and their WOE scores as a lookup table,
      so the exact same buckets can be applied to validation/test data
-     without ever recomputing them from that data to prevenet leakage
+     without ever recomputing them from that data to prevent leakage
 
     WOE_bucket = ln( (share of GOOD loans in this bucket)
                       / (share of BAD loans in this bucket) )
