@@ -1,7 +1,7 @@
 # Unit tests:
 #   1. No leakage from test set into bin edges
 #   2. Correct WOE formula output on a synthetic small example
-#   3. Rejectionof non-monotonic bins.
+#   3. Rejection of non-monotonic bins.
 
 import numpy as np
 import pandas as pd
