@@ -365,7 +365,7 @@ class WOEBinner:
 
     # Reporting helpers
     def iv(self) -> float:
-        # Total Information Value across the fitted bins, excluding the missings ones
+        # Total Information Value across the fitted bins (excluding the missing bucket)
         if self.stats_ is None:
             raise RuntimeError("Call fit() first.")
         total_good = sum(s.good_count for s in self.stats_)
