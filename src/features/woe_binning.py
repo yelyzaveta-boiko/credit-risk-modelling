@@ -85,6 +85,16 @@ class WOEBinner:
     # fit: learn bin edges + WOE values from only training data
 
     def fit(self, x_train: pd.Series, y_train: pd.Series) -> WOEBinner:
+        # Reset learned state in case fit() is called more than once on the same
+        # instance - overrides_ is only ever appended to below, so a stale merge
+        # log could otherwise leak from a previous fit into this one.
+        self.bin_edges_ = None
+        self.woe_lookup_ = None
+        self.stats_ = None
+        self.missing_woe_ = None
+        self.monotonic_direction_ = None
+        self.overrides_ = []
+
         x_train = x_train.reset_index(drop=True)
         y_train = y_train.reset_index(drop=True)
 
