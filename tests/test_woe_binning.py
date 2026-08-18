@@ -161,3 +161,36 @@ def test_missing_values_get_their_own_woe_and_transform_cleanly():
     assert transformed.notna().all()
     # check that the missing values all get the same WOE as the fitted missing bin
     assert transformed.iloc[0] == transformed.iloc[2] == binner.missing_woe_
+
+
+# Refitting the same instance must not leak state from a previous fit
+
+def test_refit_resets_overrides_log():
+    rng = np.random.default_rng(42)
+
+    # First fit: zig zag bad rate pattern forces monotonicity merges,
+    # populating overrides_
+    n_per_segment = 400
+    x1 = rng.uniform(0, 10, n_per_segment)
+    x2 = rng.uniform(10, 20, n_per_segment)
+    x3 = rng.uniform(20, 30, n_per_segment)
+    y1 = (rng.uniform(size=n_per_segment) < 0.05).astype(int)
+    y2 = (rng.uniform(size=n_per_segment) < 0.40).astype(int)
+    y3 = (rng.uniform(size=n_per_segment) < 0.06).astype(int)
+    x_zigzag = pd.Series(np.concatenate([x1, x2, x3]))
+    y_zigzag = pd.Series(np.concatenate([y1, y2, y3]))
+
+    binner = WOEBinner(feature_name="zigzag", initial_bins=15)
+    binner.fit(x_zigzag, y_zigzag)
+    assert len(binner.overrides_) > 0
+    first_fit_overrides = list(binner.overrides_)
+
+    # Refit the same instance on different data. Random noise means this fit
+    # may or may not trigger its own merges, but none of the first fit's
+    # specific merge log entries should still be present afterwards.
+    n = 2000
+    x_new = pd.Series(rng.uniform(0, 100, n))
+    y_new = pd.Series((rng.uniform(size=n) < (x_new / 150)).astype(int))
+    binner.fit(x_new, y_new)
+
+    assert not any(entry in binner.overrides_ for entry in first_fit_overrides)
