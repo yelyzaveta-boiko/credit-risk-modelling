@@ -49,8 +49,10 @@ def iv_summary(encoders: dict[str, WOEEncoder]) -> pd.DataFrame:
             "feature": feat,
             "type": "numeric" if isinstance(enc, WOEBinner) else "categorical",
             "n_bins": len(enc.stats_),
-            "iv": round(enc.iv(), 4),
+            "iv": enc.iv(),
         }
         for feat, enc in encoders.items()
     ]
-    return pd.DataFrame(rows).sort_values("iv", ascending=False).reset_index(drop=True)
+    df = pd.DataFrame(rows).sort_values("iv", ascending=False).reset_index(drop=True)
+    df["iv"] = df["iv"].round(4)
+    return df
