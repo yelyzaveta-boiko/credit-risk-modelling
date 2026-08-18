@@ -364,6 +364,16 @@ class WOEBinner:
         )
 
     # Reporting helpers
+    def iv(self) -> float:
+        # Total Information Value across the fitted bins, excluding the missings ones
+        if self.stats_ is None:
+            raise RuntimeError("Call fit() first.")
+        total_good = sum(s.good_count for s in self.stats_)
+        total_bad = sum(s.bad_count for s in self.stats_)
+        return sum(
+            (s.good_count / total_good - s.bad_count / total_bad) * s.woe for s in self.stats_
+        )
+
     def summary(self) -> pd.DataFrame:
         if self.stats_ is None:
             raise RuntimeError("Call fit() first.")
@@ -410,7 +420,7 @@ def fit_baseline_features(
 def transform_with_binners(
     X: pd.DataFrame, binners: dict[str, WOEBinner]
 ) -> pd.DataFrame:
-    #Apply already fitted binners to any split (val/test/production)
+    #Apply already fitted binners to any split
     out = pd.DataFrame(index=X.index)
     for feat, binner in binners.items():
         out[f"{feat}_woe"] = binner.transform(X[feat])

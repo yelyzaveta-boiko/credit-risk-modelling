@@ -14,7 +14,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.data.load_data import load_accepted_loans  # noqa: E402
+from src.data.load_data import load_labeled_loans  # noqa: E402
 from src.data.split import time_based_split  # noqa: E402
 from src.features.woe_binning import WOEBinner  # noqa: E402
 
@@ -30,20 +30,9 @@ def _patched_check_array(*args, **kwargs):
 
 sklearn.utils.check_array = _patched_check_array
 
-# optbinning must be imported after the check_array patch above, since it
-# binds sklearn.utils.check_array at import time.
 from optbinning import OptimalBinning  # noqa: E402
 
-TARGET_MAP = {"Fully Paid": 0, "Charged Off": 1, "Default": 1}
-
 FEATURES = ["dti", "annual_inc", "revol_util"]
-
-
-def build_labeled_frame() -> pd.DataFrame:
-    df = load_accepted_loans()
-    df = df[df["loan_status"].isin(TARGET_MAP)].copy()
-    df["target"] = df["loan_status"].map(TARGET_MAP)
-    return df
 
 
 def resolved_direction(bad_rates: list[float]) -> str:
@@ -55,15 +44,10 @@ def resolved_direction(bad_rates: list[float]) -> str:
 def own_result(feature: str, x_train: pd.Series, y_train: pd.Series) -> dict:
     binner = WOEBinner(feature_name=feature)
     binner.fit(x_train, y_train)
-    total_good = sum(s.good_count for s in binner.stats_)
-    total_bad = sum(s.bad_count for s in binner.stats_)
-    iv = sum(
-        (s.good_count / total_good - s.bad_count / total_bad) * s.woe for s in binner.stats_
-    )
     return {
         "n_bins": len(binner.stats_),
         "direction": binner.monotonic_direction_,
-        "iv": iv,
+        "iv": binner.iv(),
         "table": binner.summary(),
         "n_overrides": len(binner.overrides_),
     }
@@ -86,7 +70,7 @@ def optbinning_result(feature: str, x_train: pd.Series, y_train: pd.Series) -> d
 
 
 def main() -> None:
-    df = build_labeled_frame()
+    df = load_labeled_loans()
     train, _val, _test = time_based_split(df)
     y_train = train["target"]
 

@@ -147,3 +147,17 @@ def load_accepted_loans(
         df = df.drop(columns=cols_present)
 
     return df
+
+# only known final outcome values
+TARGET_MAP = {
+    "Fully Paid": 0,
+    "Charged Off": 1,
+    "Default": 1,
+}
+
+
+def load_labeled_loans(**kwargs) -> pd.DataFrame:
+    df = load_accepted_loans(**kwargs)
+    df = df[df["loan_status"].isin(TARGET_MAP)].copy()
+    df["target"] = df["loan_status"].map(TARGET_MAP)
+    return df
