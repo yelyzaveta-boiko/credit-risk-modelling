@@ -55,6 +55,17 @@ class CategoricalWOEEncoder:
     # fit: learn category -> WOE lookup from only training data
 
     def fit(self, x_train: pd.Series, y_train: pd.Series) -> CategoricalWOEEncoder:
+        # Reset learned state in case fit() is called more than once on the same
+        # instance - other_bin_id_ and overrides_ are only ever appended/set
+        # conditionally below, so a stale value could otherwise leak from a
+        # previous fit into this one.
+        self.category_lookup_ = None
+        self.woe_lookup_ = None
+        self.stats_ = None
+        self.missing_woe_ = None
+        self.other_bin_id_ = None
+        self.overrides_ = []
+
         x_train = x_train.reset_index(drop=True)
         y_train = y_train.reset_index(drop=True)
 

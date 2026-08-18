@@ -193,3 +193,31 @@ def test_unseen_category_without_other_bucket_raises():
 
     with pytest.raises(ValueError, match="unseen category"):
         encoder.transform(pd.Series(["never_seen"]))
+
+
+# Refitting the same instance must not leak state from a previous fit
+
+def test_refit_resets_other_bucket_and_overrides():
+    rng = np.random.default_rng(42)
+
+    # First fit: has rare categories, so other_bin_id_/overrides_ get populated
+    x_with_rare = pd.Series(["A"] * 700 + ["B"] * 700 + ["C"] * 500 + ["D"] * 50 + ["E"] * 50)
+    bad_prob = x_with_rare.map({"A": 0.1, "B": 0.3, "C": 0.2, "D": 0.5, "E": 0.05})
+    y_with_rare = pd.Series((rng.uniform(size=len(x_with_rare)) < bad_prob).astype(int))
+
+    encoder = CategoricalWOEEncoder(feature_name="purpose")
+    encoder.fit(x_with_rare, y_with_rare)
+    assert encoder.other_bin_id_ is not None
+    assert encoder.overrides_ != []
+
+    # Refit the same instance on data with no rare categories
+    n = 900
+    x_no_rare = pd.Series(rng.choice(["A", "B", "C"], size=n))
+    y_no_rare = pd.Series((rng.uniform(size=n) < 0.2).astype(int))
+    encoder.fit(x_no_rare, y_no_rare)
+
+    # Stale state from the first fit must not leak into the second
+    assert encoder.other_bin_id_ is None
+    assert encoder.overrides_ == []
+    with pytest.raises(ValueError, match="unseen category"):
+        encoder.transform(pd.Series(["never_seen"]))
