@@ -216,6 +216,15 @@ class CategoricalWOEEncoder:
         return merged
 
     # Reporting
+    def iv(self) -> float:
+        if self.stats_ is None:
+            raise RuntimeError("Call fit() first.")
+        total_good = sum(s.good_count for s in self.stats_)
+        total_bad = sum(s.bad_count for s in self.stats_)
+        return sum(
+            (s.good_count / total_good - s.bad_count / total_bad) * s.woe for s in self.stats_
+        )
+
     def summary(self) -> pd.DataFrame:
         if self.stats_ is None:
             raise RuntimeError("Call fit() first.")
