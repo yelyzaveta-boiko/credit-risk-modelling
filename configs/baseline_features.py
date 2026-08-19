@@ -23,3 +23,19 @@ CATEGORICAL_FEATURES = [
 ]
 
 BASELINE_FEATURES = NUMERIC_FEATURES + CATEGORICAL_FEATURES
+
+# Features dropped after IV screening on the train split (IV < 0.02, the
+# standard cutoff in scorecard development)
+DROPPED_LOW_IV_FEATURES = [
+    "pub_rec",
+    "total_acc",
+    "emp_length",
+    "open_acc",
+    "purpose",
+]
+
+SELECTED_NUMERIC_FEATURES = [f for f in NUMERIC_FEATURES if f not in DROPPED_LOW_IV_FEATURES]
+SELECTED_CATEGORICAL_FEATURES = [
+    f for f in CATEGORICAL_FEATURES if f not in DROPPED_LOW_IV_FEATURES
+]
+SELECTED_FEATURES = SELECTED_NUMERIC_FEATURES + SELECTED_CATEGORICAL_FEATURES
