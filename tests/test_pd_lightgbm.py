@@ -2,7 +2,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.models.pd_lightgbm import feature_importance_report, fit_lightgbm_pd_model, quick_auc
+from src.models.pd_lightgbm import (
+    feature_importance_report,
+    fit_lightgbm_pd_model,
+    prepare_features,
+    quick_auc,
+)
 
 
 @pytest.fixture
@@ -22,6 +27,19 @@ def raw_frame():
 
     X = pd.DataFrame({"numeric": numeric, "category": category, "with_missing": with_missing})
     return X, y
+
+
+def test_prepare_features_selects_columns_and_casts_categoricals(raw_frame):
+    X, _ = raw_frame
+    raw = X.assign(category=X["category"].astype(str), extra_column="unused")
+
+    prepared = prepare_features(raw, ["numeric", "category"], ["category"])
+
+    assert list(prepared.columns) == ["numeric", "category"]
+    assert prepared["category"].dtype.name == "category"
+    assert prepared["numeric"].dtype == raw["numeric"].dtype
+    # the original frame must be untouched
+    assert raw["category"].dtype.name != "category"
 
 
 def test_fit_lightgbm_pd_model_handles_categorical_and_missing_columns(raw_frame):

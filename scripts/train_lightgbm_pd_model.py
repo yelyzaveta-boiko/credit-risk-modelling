@@ -18,6 +18,7 @@ from configs.baseline_features import (  # noqa: E402
 from src.models.pd_lightgbm import (  # noqa: E402
     feature_importance_report,
     fit_lightgbm_pd_model,
+    prepare_features,
     quick_auc,
 )
 
@@ -25,20 +26,14 @@ PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 MODELS_DIR = PROJECT_ROOT / "models"
 
 
-def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
-    X = df[SELECTED_FEATURES].copy()
-    # native LightGBM support for categorical columns requires the "category" dtype
-    for col in SELECTED_CATEGORICAL_FEATURES:
-        X[col] = X[col].astype("category")
-    return X
-
-
 def main() -> None:
     train = pd.read_csv(PROCESSED_DIR / "raw_train.csv")
     val = pd.read_csv(PROCESSED_DIR / "raw_val.csv")
 
-    X_train, y_train = prepare_features(train), train["target"]
-    X_val, y_val = prepare_features(val), val["target"]
+    X_train = prepare_features(train, SELECTED_FEATURES, SELECTED_CATEGORICAL_FEATURES)
+    y_train = train["target"]
+    X_val = prepare_features(val, SELECTED_FEATURES, SELECTED_CATEGORICAL_FEATURES)
+    y_val = val["target"]
 
     model = fit_lightgbm_pd_model(X_train, y_train)
 

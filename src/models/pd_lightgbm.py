@@ -7,6 +7,16 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 
 
+def prepare_features(
+    df: pd.DataFrame, feature_columns: list[str], categorical_features: list[str]
+) -> pd.DataFrame:
+    # LightGBM's native categorical support needs pandas "category" dtype
+    X = df[feature_columns].copy()
+    for col in categorical_features:
+        X[col] = X[col].astype("category")
+    return X
+
+
 def fit_lightgbm_pd_model(
     X_train: pd.DataFrame, y_train: pd.Series, **kwargs
 ) -> lgb.LGBMClassifier:
